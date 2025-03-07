@@ -1,8 +1,11 @@
 import React from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 const Logout = () => {
+  const navigate = useNavigate()
     const out = async() =>{
-        await axios.get('/logout')
+      const response = await axios.get('/logout')
+      if(response){navigate('/login')}
     }
   return (  
     <>

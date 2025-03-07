@@ -108,7 +108,7 @@ app.post('/api/login',async(req,res)=>{
 
 app.get('/logout',(req,res)=>{
     res.cookie('token',"")
-    res.redirect('/login')
+    res.send('logged out')
 })
 
 function isLoggedIn(req,res,next)
