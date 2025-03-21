@@ -28,6 +28,8 @@ let userSchema = mongoose.Schema({
         type:String,
         required:[true,"enter password"]
     },
+    verifyOtp:{type:String,default:''},
+    verifyOtpExpiresAt:{type:Number,default:0},
     posts:[{type:mongoose.Schema.Types.ObjectId,ref:'Mailpost'}]//reference is name of table or document
 },{timestamps:true})
 

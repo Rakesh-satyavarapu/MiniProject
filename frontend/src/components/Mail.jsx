@@ -27,7 +27,7 @@ const Mail = () => {
     setEmailText('')
   }
   return (    
-    <div className='container-fluid'>
+    <div className='container-fluid p-5 mt-5'>
       <button onClick={allMail} className='btn btn-primary mt-2'>All Uploaded Mails </button>
       <form className='form-group' onSubmit={formHandler}>
         <input

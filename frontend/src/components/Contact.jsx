@@ -28,7 +28,8 @@ const Contact = () => {
     setMessage('')
   }
   return (
-    <div className='p-5'>
+    <div className='p-5 mt-5 '>
+      <h1 className='text-center'>Contact Us</h1>
       <form onSubmit={submitHandler} className='form-group'>
         <input
         className='form-control mb-3'

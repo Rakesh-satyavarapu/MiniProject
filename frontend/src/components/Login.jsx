@@ -27,9 +27,15 @@ useEffect(() => {
     e.preventDefault()
     try{
       const response = await axios.post('/api/login',{email,password})
+      if(response.data.token)
+      {
       localStorage.setItem('token', response.data.token);
       console.log(response)
       navigate('/mail')
+      }
+      else{
+        navigate('/register')
+      }
     }
     catch(err){
       console.log(err)
@@ -39,8 +45,8 @@ useEffect(() => {
   };
 
   return (
-    <div className='d-flex justify-content-center align-items-center p-3 bg-dark'>
-      <div className='card p-5 mt-3 shadow-lg rounded-5 justify-content-center align-items-center ' style={{margin:'40px',width:'525px'}}>
+    <div className=' min-vh-100  d-flex justify-content-center align-items-center bg-dark'>
+      <div className='card p-5 mt-5 shadow-lg rounded-5 justify-content-center align-items-center ' style={{margin:'40px',width:'525px'}}>
         <h1 className='mb-5 text-center text-primary'>Login Form</h1>
         <form className='form-group w-75' onSubmit={loginValues}>
           <div className='mb-3'>
@@ -63,7 +69,8 @@ useEffect(() => {
             placeholder='enter password' 
             required />
           </div>
-          <button className='btn btn-primary w-100 mb-5' type='submit' >Login <i className="bi bi-box-arrow-in-right me-2"></i></button>
+          <button className='btn btn-primary w-100 mb-2 ' type='submit' >Login <i className="bi bi-box-arrow-in-right me-2"></i></button>
+          <div><a className='btn  mb-3' href='/forgot'> forgot password ?</a></div>
           <div className='justify-content-center align-items-center d-flex flex-column'>
           <p>Don't have an account ? <a className='text-danger btn-link mb-2' href='/register'>Register</a></p>
           <p className='text-muted mb-2'>Or</p>

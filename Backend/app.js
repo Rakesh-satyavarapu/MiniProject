@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const axios = require('axios');
 let env = require('dotenv')
-let path = require('path')
+
 env.config();  
 const PORT = process.env.PORT || 5000;
 let bcrypt=require('bcrypt')
@@ -14,14 +14,14 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const cors = require('cors')
-app.use(cors())
+app.use(cors({credentials:true}))
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'))
 app.use(cookieParser())
 
-app.set("view engine", "ejs");
+
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your_secret_key',
@@ -75,7 +75,6 @@ app.post('/api/createUser',async (req,res)=>{
             
             let createdUser = await userSchema.create({firstname,lastname,username,email,password:hash})
             console.log("user created",createdUser.username,createdUser.password)
-            // res.render("home",{email:createdUser.email})
             
         })
     })
@@ -107,22 +106,26 @@ app.post('/api/login',async(req,res)=>{
 })
 
 app.get('/logout',(req,res)=>{
-    res.cookie('token',"")
+    res.clearCookie('token')
     res.send('logged out')
 })
 
-function isLoggedIn(req,res,next)
-{
-    if(req.cookies.token === "")
-    {
-       return res.redirect('/login')
+function isLoggedIn(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." }); // Send JSON response
     }
-    else{
-        let data = jwt.verify(req.cookies.token,process.env.JWT_SECRET)
-        req.user=data
+
+    try {
+        const data = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = data;
+        next();
+    } catch (err) {
+        return res.status(403).json({ error: "Invalid or expired token." });
     }
-    next()
 }
+
+
 // API endpoint for summarizing email
 app.post('/api/summarize',isLoggedIn, async (req, res) => {
     const { emailText,name } = req.body;
@@ -143,11 +146,24 @@ app.get('/allMailUploads',isLoggedIn,async(req,res)=>{
     res.json({posts:user.posts})
 })
 
-app.get('/mailview/:name',isLoggedIn,async(req,res)=>{
-    let mail= await MailSchema.findOne({name:req.params.name})
-    let con=mail.Mailcontent
-    res.send(con)
-})
+app.delete('/deleteMail/:id', isLoggedIn, async (req, res) => {
+    try {
+        const post = await MailSchema.findByIdAndDelete(req.params.id);
+
+        if (!post) {
+            return res.status(404).json({ message: "Mail not found" });
+        }
+        await UserSchema.findByIdAndUpdate(req.user.id, {
+            $pull: { mails: req.params.id } // Remove mail ID from the user's mails array
+        });
+
+        res.status(200).json({ message: "Mail deleted successfully", deletedMail: post });
+    } catch (error) {
+        res.status(500).json({ error: "Error deleting mail" });
+    }
+});
+
+app.get('/')
 
 mongoose.connect(`${process.env.MONGODB_URL}/projectDB`)
 .then(()=>{
@@ -195,7 +211,10 @@ app.post('/api/classify',isLoggedIn ,async (req, res) => {
     });
 });
 
-
+app.get('/api/userData',isLoggedIn,async(req,res)=>{
+    const data = await userSchema.findOne({email:req.user.email})
+    res.json({user:data})
+})
 
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
@@ -205,13 +224,14 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         let user = await userSchema.findOne({ email: profile.emails[0].value });
+
         if (!user) {
             user = await userSchema.create({
                 firstname: profile.name.givenName,
                 lastname: profile.name.familyName,
                 username: profile.emails[0].value.split('@')[0],
                 email: profile.emails[0].value,
-                password: '' // Since it's OAuth, password is not required
+                password: '' // OAuth users don’t need a password
             });
         }
         return done(null, user);
@@ -239,7 +259,20 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     (req, res) => {
-        let token = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET);
-        res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
+        if (!req.user) {
+            return res.redirect(`${process.env.FRONTEND_URL}/login`); // If authentication fails
+        }
+
+        // Generate JWT token
+        let token = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // Set token as a cookie (No "secure" flag for local testing)
+        res.cookie('token', token, {
+            httpOnly: true,  
+            maxAge: 60 * 60 * 1000  // 1 hour
+        });
+
+        // Redirect to /mail after successful login
+        res.redirect(`${process.env.FRONTEND_URL}/mail`);
     }
 );
