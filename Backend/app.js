@@ -153,9 +153,9 @@ app.delete('/deleteMail/:id', isLoggedIn, async (req, res) => {
         if (!post) {
             return res.status(404).json({ message: "Mail not found" });
         }
-        await UserSchema.findByIdAndUpdate(req.user.id, {
-            $pull: { mails: req.params.id } // Remove mail ID from the user's mails array
-        });
+        // await UserSchema.findByIdAndUpdate(req.user.id, {
+        //     $pull: { mails: req.params.id } // Remove mail ID from the user's mails array
+        // });
 
         res.status(200).json({ message: "Mail deleted successfully", deletedMail: post });
     } catch (error) {
@@ -231,7 +231,9 @@ passport.use(new GoogleStrategy({
                 lastname: profile.name.familyName,
                 username: profile.emails[0].value.split('@')[0],
                 email: profile.emails[0].value,
-                password: '' // OAuth users don’t need a password
+                password: undefined, // Ensure password is undefined
+                googleId: profile.id, // Store Google ID to bypass password requirement
+                profilePicture: profile.photos[0]?.value // Store profile picture if available
             });
         }
         return done(null, user);
@@ -239,6 +241,7 @@ passport.use(new GoogleStrategy({
         return done(err, null);
     }
 }));
+
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -267,10 +270,7 @@ app.get('/auth/google/callback',
         let token = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         // Set token as a cookie (No "secure" flag for local testing)
-        res.cookie('token', token, {
-            httpOnly: true,  
-            maxAge: 60 * 60 * 1000  // 1 hour
-        });
+        res.cookie('token', token);
 
         // Redirect to /mail after successful login
         res.redirect(`${process.env.FRONTEND_URL}/mail`);

@@ -14,7 +14,7 @@ const ForgotPass = () => {
         e.preventDefault()
         const otp = Math.floor(100000+Math.random()*900000);
         const data = {
-            service_id: 'service_nzfp5dd',
+            service_id: 'service_6if8ffj',
             template_id: 'template_qqg9udy',
             user_id: 'ZptoHDThWcTrz4SMG',
             template_params: {

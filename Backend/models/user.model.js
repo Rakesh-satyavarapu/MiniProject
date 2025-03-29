@@ -1,37 +1,38 @@
-let mongoose = require('mongoose')
+let mongoose = require('mongoose');
 
 let userSchema = mongoose.Schema({
-    firstname:{
-        type:String,
-        required:[true,'enter first name'],
-        minlength:3
+    firstname: {
+        type: String,
+        required: function () { return !this.googleId; }, // Required if not using Google
+        minlength: 3
     },
-    lastname:{
-        type:String,
-        required:[true,'enter last name']
+    lastname: {
+        type: String,
+        required: function () { return !this.googleId; }
     },
-    username:{
-        type:String,
-        required:[true,'enter user name'],
-        unique:true
+    username: {
+        type: String,
+        unique: true
     },
-    email:{
-        type:String,
-        required:true,
+    email: {
+        type: String,
+        required: true,
         match: [
             /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
             'Please enter a valid email address',
         ],
-        unique:true
+        unique: true
     },
-    password:{
-        type:String,
-        required:[true,"enter password"]
+    password: {
+        type: String,
+        required: function () { return !this.googleId; } // Not required for Google login
     },
-    verifyOtp:{type:String,default:''},
-    verifyOtpExpiresAt:{type:Number,default:0},
-    posts:[{type:mongoose.Schema.Types.ObjectId,ref:'Mailpost'}]//reference is name of table or document
-},{timestamps:true})
+    googleId: { type: String, unique: true, sparse: true }, // Store Google User ID
+    profilePicture: { type: String }, // Google profile image URL
+    verifyOtp: { type: String, default: '' },
+    verifyOtpExpiresAt: { type: Number, default: 0 },
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mailpost' }] // Reference to Mailpost
+}, { timestamps: true });
 
-let user = mongoose.model('user',userSchema)
-module.exports = user
+let user = mongoose.model('user', userSchema);
+module.exports = user;

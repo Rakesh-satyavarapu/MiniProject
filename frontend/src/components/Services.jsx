@@ -2,6 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaEnvelopeOpenText, FaShieldAlt } from "react-icons/fa";
 import "animate.css";
+import {Link} from 'react-router-dom'
 
 const Services = () => {
   return (
@@ -28,7 +29,7 @@ const Services = () => {
           <div className="col-md-6">
             <div className="service-section animate_animated animate_fadeInLeft">
               <div className="icon-box">
-                <a href='/mail'><FaEnvelopeOpenText size={50} color="#4B0082" /></a>
+                <Link to='/mail'><FaEnvelopeOpenText size={50} color="#4B0082" /></Link>
               </div>
               <h3 className="fw-bold">1️⃣ Email Summarization</h3>
               
@@ -58,7 +59,7 @@ const Services = () => {
           <div className="col-md-6">
             <div className="service-section animate_animated animate_fadeInRight">
               <div className="icon-box">
-                <a href="/mail"><FaShieldAlt size={50} color="#4B0082" /></a>
+              <Link to='/mail'><FaShieldAlt size={50} color="#4B0082" /></Link>
               </div>
               <h3 className="fw-bold">2️⃣ Spam Mail Classification</h3>
               

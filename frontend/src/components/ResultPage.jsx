@@ -19,7 +19,7 @@ const ResultPage = () => {
   const isHam = resultText === "Predicted as: ham";
 
   return (
-    <div className="container text-center mt-5">
+    <div className="container text-center p-5 mt-5">
       <h2>Result</h2>
 
       {type === "/api/classify" ? (
