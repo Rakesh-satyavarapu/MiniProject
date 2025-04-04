@@ -50,8 +50,8 @@ function App() {
             <Route path="/allmails" element={<AllMails />} />
             <Route path="/logout" element={<Logout />} />
             <Route path='/forgot' element={<ForgotPass />} />
-            <Route path='/reset' element={<ResetPass />} />
-            <Route path='/otp/:email' element={<Confirmotp/>} />
+            <Route path='/reset/:email' element={<ResetPass />} />
+            <Route path='/otp/:email' element={<Confirmotp />} />
           </Routes>
         </Router>
       )}

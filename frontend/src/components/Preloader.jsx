@@ -8,7 +8,7 @@ const EmailGuardAnimation = () => {
 
   // Typing effect for text
   const typingEffect = () => {
-    let text = "EmailGuard";
+    let text = "Email Guard";
     let i = 0;
     let element = document.getElementById("typedText");
     let interval = setInterval(() => {

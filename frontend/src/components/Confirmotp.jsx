@@ -1,6 +1,11 @@
 import React, { useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; 
 
-const OTPVerification = ({ onSubmit }) => {
+const OTPVerification = () => {
+  const navigate = useNavigate();
+  const { email } = useParams(); 
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
 
@@ -26,12 +31,23 @@ const OTPVerification = ({ onSubmit }) => {
     }
   };
 
+  const verifyOTP = async(otp) =>{
+    let user = await axios.get(`/api/confirmOtp/${email}`)
+    if(String(user.data.verifyOtp) === String(otp))
+    {
+      navigate(`/reset/${email}`)
+    }
+    else{
+      alert('incorrect otp')
+    }
+  }
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     const enteredOtp = otp.join(""); // Convert array to string
     if (enteredOtp.length === 6) {
-      onSubmit(enteredOtp); // Call the submit function
+      console.log(typeof(enteredOtp))
+      verifyOTP(enteredOtp)
     } else {
       alert("Please enter a 6-digit OTP.");
     }

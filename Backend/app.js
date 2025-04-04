@@ -141,11 +141,51 @@ app.post('/api/summarize',isLoggedIn, async (req, res) => {
     return res.json({result:summary})
 });
 
+//user posted mails
 app.get('/allMailUploads',isLoggedIn,async(req,res)=>{
     let user=await userSchema.findOne({email:req.user.email}).populate('posts')
     res.json({posts:user.posts})
 })
 
+//save otp and expiry time
+app.post('/api/save-otp', async (req, res) => {
+    const { email, otp, expiryTime } = req.body;
+
+    try {
+        let user = await userSchema.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Save OTP and expiration time
+        user.verifyOtp = otp;
+        user.verifyOtpExpiresAt = expiryTime;
+        await user.save();
+
+        res.json({ success: true, message: "OTP saved successfully" });
+    } catch (error) {
+        console.error("Error saving OTP:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+//check otp 
+app.get('/api/confirmOtp/:userEmail', async (req, res) => {
+    try {
+        const user = await userSchema.findOne({ email: req.params.userEmail });
+        if (user) {
+            return res.send(user)
+        } else {
+            return res.json({ userExist: false });
+        }
+    } catch (error) {
+        console.error('Error finding user:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+//delte mail
 app.delete('/deleteMail/:id', isLoggedIn, async (req, res) => {
     try {
         const post = await MailSchema.findByIdAndDelete(req.params.id);
@@ -163,7 +203,33 @@ app.delete('/deleteMail/:id', isLoggedIn, async (req, res) => {
     }
 });
 
-app.get('/')
+//check user existed or not for reset password
+app.get('/api/finduser/:email', async (req, res) => {
+    try {
+        const user = await userSchema.findOne({ email: req.params.email });
+
+        if (user) {
+            return res.json({ userExist: true });
+        } else {
+            return res.json({ userExist: false });
+        }
+    } catch (error) {
+        console.error('Error finding user:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/setPass/:email',async(req,res)=>{
+    let email = req.params.email
+    let {pass} = req.body
+    bcrypt.genSalt(10,(err,salt)=>{
+        bcrypt.hash(pass,salt,async(err,hash)=>{    
+            let user = await userSchema.findOneAndUpdate({email},{password:hash},{new:true})
+            console.log("user created",user.password)
+            res.json({'set':true})
+        })
+})
+})
 
 mongoose.connect(`${process.env.MONGODB_URL}/projectDB`)
 .then(()=>{
@@ -211,6 +277,7 @@ app.post('/api/classify',isLoggedIn ,async (req, res) => {
     });
 });
 
+//user logged in
 app.get('/api/userData',isLoggedIn,async(req,res)=>{
     const data = await userSchema.findOne({email:req.user.email})
     res.json({user:data})
