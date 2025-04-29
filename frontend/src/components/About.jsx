@@ -114,7 +114,7 @@ const About = () => {
             <div className="col-md-4">
               <div className="card shadow-lg border-0 p-4">
                 <h4 className="text-info">🔧 Easy to Integrate</h4>
-                <p>Can be easily integrated into existing email systems.</p>
+                <p>Can be easily integrated into existing email systems using Gmail APIs.</p>
               </div>
             </div>
             <div className="col-md-4">
